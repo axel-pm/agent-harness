@@ -1,0 +1,7 @@
+{"type":"user","message":{"role":"user","content":"Add a retry to the fetch.<system-reminder>REMINDER_TEXT</system-reminder>"}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"I'll add a retry with backoff."},{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"echo TOOL_INPUT"}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"TOOL_OUTPUT"}]}}
+{"type":"assistant","isSidechain":true,"message":{"role":"assistant","content":[{"type":"text","text":"SIDECHAIN_TEXT"}]}}
+{"type":"user","isMeta":true,"message":{"role":"user","content":"META_TEXT"}}
+{"type":"user","message":{"role":"user","content":"Ship it."}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Done: three attempts, then fail."}]}}
