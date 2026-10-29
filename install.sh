@@ -23,6 +23,7 @@ link() {  # link <path relative to the repo>
   echo "linked $1"
 }
 
+cd "$REPO"  # the globs below are repo paths
 link CLAUDE.md
 for f in agents/*.md hooks/*.sh hooks/*.py; do
   link "$f"

@@ -79,16 +79,20 @@ out=$(SESSION_LOG_FILE="$LOG" SESSION_LOG_STATE="$TMP/state.json" SESSION_LOG_PR
   python3 -I "$REPO/hooks/session-log-summarize.py" "$TMP/payload.json")
 check "summariser stops when its prompt file is missing" grep -q "can't read prompt file" <<<"$out"
 
-# Installer: links everything, backs up what was there, and can run twice.
+# Installer: links everything, backs up what was there, and can run twice. Run it from
+# another folder, as a user would.
 CLAUDE_DIR="$TMP/claude"
 mkdir -p "$CLAUDE_DIR"
 echo "old" >"$CLAUDE_DIR/CLAUDE.md"
-CLAUDE_DIR="$CLAUDE_DIR" "$REPO/install.sh" >/dev/null
+(cd "$TMP" && CLAUDE_DIR="$CLAUDE_DIR" "$REPO/install.sh" >/dev/null)
 check "installer links CLAUDE.md" test "$(readlink "$CLAUDE_DIR/CLAUDE.md")" = "$REPO/CLAUDE.md"
-check "installer links each skill" test "$(readlink "$CLAUDE_DIR/skills/deploy")" = "$REPO/skills/deploy"
-check "installer links the hooks" test -x "$CLAUDE_DIR/hooks/session-log-start.sh"
+for path in "$REPO"/agents/*.md "$REPO"/hooks/*.sh "$REPO"/hooks/*.py "$REPO"/skills/*; do
+  rel=${path#"$REPO"/}
+  check "installer links $rel" test "$(readlink "$CLAUDE_DIR/$rel")" = "$path"
+done
+check "installer leaves no stray links" test -z "$(find "$CLAUDE_DIR" -name '\**')"
 check "installer backs up what it replaces" grep -qx old "$CLAUDE_DIR"/backups/agent-harness-*/CLAUDE.md
-check "installer is idempotent" test -z "$(CLAUDE_DIR="$CLAUDE_DIR" "$REPO/install.sh")"
+check "installer is idempotent" test -z "$(cd "$TMP" && CLAUDE_DIR="$CLAUDE_DIR" "$REPO/install.sh")"
 
 # Settings and skills.
 check "settings.example.json parses" quiet jq -e '.hooks.SessionEnd' "$REPO/settings.example.json"
